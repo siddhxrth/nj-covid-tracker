@@ -4,7 +4,7 @@
 ## Setup
 #### To get this web scraper running locally, the setup is very minimal. The only step is to edit the ```.env``` file with your information.
 
-### The first step is to fill out the Twitter Developer API keys:
+### 1) The first step is to fill out the Twitter Developer API keys:
 
     API_KEY = 
     API_SECRET = 
