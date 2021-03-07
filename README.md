@@ -1,5 +1,5 @@
 # New Jersey COVID-19 Tracker
-#### Coronavirus tracker for the state of New Jersey. Built with Selenium, implemented in Python. Seeing that cases keep rising, it's important to be aware of the new developments in cases, vaccines, and tests.
+#### Coronavirus tracker for the state of New Jersey. Built with Requests, implemented in Python. Seeing that cases keep rising, it's important to be aware of the new developments in cases, vaccines, and tests.
 
 ## Setup
 #### To get this web scraper running locally, the setup is very minimal. The only step is to edit the ```.env``` file with your information.
@@ -18,7 +18,7 @@
 ### 2) Second, in the ```WHEN_TO_RUN``` field, specify when you want the program to run in 24H time. For example, if you want it to run at ```4:30 PM```, enter ```16:30```.
 
 ### 3) Last, you need to install the dependencies. Run these commands, and then you should be good to run the program!
-    pip install selenium
+    pip install requests
     pip install tweepy
     pip install python-dotenv
     pip install schedule
@@ -27,3 +27,5 @@
 
 # About
 #### Hi! I'm Sid, a Full Stack developer currently in High School. You can learn more about me on [my website](https://siddharthlohani.dev), or you can follow me on [Twitter](https://twitter.com/sidlohani)! If you found this project helpful, star it on Github!
+
+### Forked by @carcraftz. You can learn more about me on [my website](https://carcraftz.dev)
