@@ -1,6 +1,5 @@
-# Siddharth Lohani -> Forked by @carcraftz
+# Siddharth Lohani
 # 2/22/2021
-
 
 # schedule imports
 import schedule
@@ -14,61 +13,63 @@ import settings
 # twitter api wrapper import
 import tweepy
 
-
-
 # Authenticate to Twitter
-auth = tweepy.OAuthHandler(settings.API_KEY, settings.API_SECRET)
-auth.set_access_token(settings.ACCESS_TOKEN, settings.ACCESS_TOKEN_SECRET)
-
-# Create API object
-api = tweepy.API(auth)
+try:
+	auth = tweepy.OAuthHandler(settings.API_KEY, settings.API_SECRET)
+	auth.set_access_token(settings.ACCESS_TOKEN, settings.ACCESS_TOKEN_SECRET)
+	api = tweepy.API(auth)
+except:
+	print("error authenticating with twitter")
 
 def fetchDataAndTweet():
-		countr = requests.get("https://projects.nj.com/coronavirus-tracker/data/counts.json")
-		countjson = countr.json()[-1]
-		totalCases = countjson["Total state cases"]
-		newCases = countjson["New cases in state"]
-		deathr = requests.get("https://projects.nj.com/coronavirus-tracker/data/deaths.json")
-		deathjson = deathr.json()[-1]
-		totalDeaths = deathjson["STATE TOTAL-MUST MATCH D"]
-		newDeaths = deathjson["New deaths"]
-		testsr = requests.get("https://projects.nj.com/coronavirus-tracker/data/tests.json")
-		testsjson = testsr.json()[-1]
-		totalTests = testsjson["Total Tests"]
-		hospitalr = requests.get("https://covidtracking.com/page-data/data/page-data.json")
 
-		hospitaljson = hospitalr.json()["result"]["data"]["allCovidState"]
-		totalHospitalized = ""
-		newHospitalized = ""
-		for statedata in hospitaljson["nodes"]:
-			if(statedata["state"] =='NJ'):
-				totalHospitalized = str(statedata["hospitalizedCumulative"])
-				newHospitalized = str(statedata["hospitalizedCurrently"])
-		#TODO: figure out how to get new tests (prob need to access site on a weekday)
-		newTests = "0"
-		todaysPositivity = "0"
-		overallPositivity = str(round(int(totalCases)/int(totalTests)*100,3))+"%"
-		today = date.today()
-		d = today.strftime("%B %d, %Y")
-		
-		firstLine = "#COVID updates for " + d + ": \n \n"
-		newCasesLine = "new cases: " + newCases + "\n"
-		totalCasesLine = "total cases: " + totalCases + "\n \n"
-		newDeathsLine = "new deaths: " + newDeaths + "\n"
-		totalDeathsLine = "total deaths: " + totalDeaths + "\n \n"
-		newTestsLine = "new tests: " + newTests + "\n" 
-		totalTestsLine = "total tests: " + totalTests + "\n \n"
-		totalHospitalizedLine = "total hospitalized: " + totalHospitalized + "\n" 
-		newHospitalizedLine = "new hospitalized: " + newHospitalized + "\n\n" 
-		todaysPositivityLine = "today's positivity: " + todaysPositivity
-		overallPositivityLine = "overall positivity: " + overallPositivity + "\n"
-		message = firstLine + newCasesLine + totalCasesLine + newDeathsLine + totalDeathsLine + newTestsLine + totalTestsLine + totalHospitalizedLine + newHospitalizedLine +  overallPositivityLine
-		print(message)
+	totalStatsr = requests.get("https://services7.arcgis.com/Z0rixLlManVefxqY/arcgis/rest/services/survey123_cb9a6e9a53ae45f6b9509a23ecdf7bcf/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=CreationDate%20desc&resultOffset=0&resultRecordCount=1&resultType=standard&cacheHint=true").json()
+	totalProbableCasesr = requests.get("https://services7.arcgis.com/Z0rixLlManVefxqY/arcgis/rest/services/DailyCaseCounts/FeatureServer/0/query?f=json&where=COUNTY%20IS%20NOT%20NULL&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22TOTAL_AG_CASES%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&outSR=102100&resultType=standard&cacheHint=true").json()
+	newCasesr = requests.get("https://services7.arcgis.com/Z0rixLlManVefxqY/arcgis/rest/services/DailyCaseCounts/FeatureServer/0/query?f=json&where=OBJECTID%20IS%20NOT%20NULL&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22NEW_PCR_CASES%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&outSR=102100&resultType=standard&cacheHint=true").json()
+	newDeathsr = requests.get("https://services7.arcgis.com/Z0rixLlManVefxqY/arcgis/rest/services/DailyCaseCounts/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22NEW_DEATHS%22%2C%22outStatisticFieldName%22%3A%22value%22%7D%5D&outSR=102100&resultType=standard&cacheHint=true").json()
 
-    # tweet the update
-		api.update_status(message)
+	d = date.today().strftime("%B %d, %Y")
 
-fetchDataAndTweet()
+	header = "#COVID19 updates for " + d + ": \n \n"
+	
+	# cases
+	newCases = "new cases: " + str(newCasesr['features'][0]['attributes']['value']) + "\n"
+
+	totalConfirmedCases = totalStatsr['features'][0]['attributes']['total_positives']
+	totalProbableCases = totalProbableCasesr['features'][0]['attributes']['value']
+
+	totalCases = "total cases: " + str(totalConfirmedCases+totalProbableCases) + " (" + str(totalConfirmedCases) + " confirmed, " + str(totalProbableCases) + " probable)" + "\n"
+
+	# deaths
+	newDeaths = "new deaths: " + str(newDeathsr['features'][0]['attributes']['value']) + "\n"
+	totalDeaths = "total deaths: " + str(totalStatsr['features'][0]['attributes']['total_deaths']) + "\n"
+
+	# hospitalizations
+	totalHospitalized = ""
+	currentHospitalized = ""
+
+	hospitalr = requests.get("https://covidtracking.com/page-data/data/page-data.json")
+
+	data = hospitalr.json()["result"]["data"]["allCovidState"]
+
+	for stateData in data["nodes"]:
+
+		if(stateData["state"] == "NJ"):
+			totalHospitalized = "total hospitalized: " + str(stateData["hospitalizedCumulative"]) + "\n"
+			currentHospitalized = "current hospitalized: " + str(stateData["hospitalizedCurrently"]) + " (" + str(stateData['inIcuCurrently']) + " in ICU, " + str(stateData['onVentilatorCurrently']) + " on ventilator)" + "\n"
+	
+	# rate of transmission
+	rateOfTransmission = "transmission rate: " + str(totalStatsr['features'][0]['attributes']['rate_of_transmission_rt'])
+
+
+	tweet = header + newCases + totalCases + "\n" + newDeaths + totalDeaths + "\n" + currentHospitalized + totalHospitalized + "\n" + rateOfTransmission
+
+
+	print(tweet)
+
+	api.update_status(tweet)
+
+	print("\nTWEETED ON " + d)
 
 schedule.every().day.at(settings.WHEN_TO_RUN).do(fetchDataAndTweet)
 
